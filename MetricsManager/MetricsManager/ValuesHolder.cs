@@ -7,10 +7,10 @@ namespace MetricsManager
 {
     public class ValuesHolder
     {
-        public List<WeatherForecast> Values { get; set; }
+        public List<DataAndTemp> Values { get; set; }
         public ValuesHolder()
         {
-            Values = new List<WeatherForecast>();
+            Values = new List<DataAndTemp>();
         }
     }
 }

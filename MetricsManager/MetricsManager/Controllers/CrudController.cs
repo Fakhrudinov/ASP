@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace MetricsManager.Controllers
 {
-    [Route("api/crud")]
+    [Route("api")]
     [ApiController]
     public class CrudController : ControllerBase
     {
@@ -15,52 +15,113 @@ namespace MetricsManager.Controllers
             this.holder = holder;
         }
 
-        [HttpPost("create")]
+        [HttpPost("set")]
         public IActionResult Create([FromQuery] DateTime? date, [FromQuery] int? temperature)
         {
-            WeatherForecast setWFC = new WeatherForecast();
+            DataAndTemp dt = new DataAndTemp();
 
             if(date != null)
             {
-                setWFC.Date = (DateTime)date;
+                dt.Date = (DateTime)date;
             }
             else
             {
-                setWFC.Date = DateTime.Now;
+                dt.Date = DateTime.Now;
             }
 
             if (temperature != null)
             {
-                setWFC.TemperatureC = (int)temperature;
-                holder.Values.Add(setWFC); // without temp is nothing to save
+                dt.Temperature = (int)temperature;
+                holder.Values.Add(dt); // without temp is nothing to save
             }
 
             return Ok();
         }
 
-        [HttpGet("read")]
-        public IActionResult Read()
+        [HttpGet("get")]
+        public IActionResult Read([FromQuery] DateTime? dateStart, [FromQuery] DateTime? dateEnd)
         {
-            return Ok(holder.Values);
+            if (dateStart != null)
+            {
+                System.Collections.Generic.IEnumerable<DataAndTemp> result = null;
+                if (dateEnd != null) // with dateEnd = return range
+                {
+                    result = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
+                }
+                else // only dateStart sended = return exact value
+                {
+                    result = holder.Values.Where(x => x.Date == (DateTime)dateStart);
+                }
+
+                if (result.Count<DataAndTemp>() > 0)
+                    return Ok(result);
+                else
+                    return NoContent();
+            }
+            else // no data sended = return all data
+            {
+                return Ok(holder.Values);
+            }
         }
 
         [HttpPut("update")]
-        public IActionResult Update([FromQuery] DateTime? date, [FromQuery] int newValue)
+        public IActionResult Update([FromQuery] DateTime? date, [FromQuery] int? newValue)
         {
-            //for (int i = 0; i < holder.Values.Count; i++)
-            //{
-            //    if (holder.Values[i] == stringsToUpdate)
-            //        holder.Values[i] = newValue;
-            //}
+            if (date != null && newValue != null)
+            {
+                bool founded = false;
+                for (int i = 0; i < holder.Values.Count; i++)
+                {
+                    if (holder.Values[i].Date == date)
+                    {
+                        holder.Values[i].Temperature = (int)newValue;
+                        founded = true;
+                    }
+                }
 
-            return Ok();
+                if (!founded)
+                    return NoContent();
+
+                return Ok();
+            }
+            else // no data for update = error
+            {
+                return BadRequest();
+            }            
         }
 
         [HttpDelete("delete")]
-        public IActionResult Delete([FromQuery] string stringsToDelete)
-        {
-            //holder.Values = holder.Values.Where(w => w != stringsToDelete).ToList();
-            return Ok();
+        public IActionResult Delete([FromQuery] DateTime? dateStart, [FromQuery] DateTime? dateEnd)
+        {            
+            if (dateStart != null)
+            {
+                if (dateEnd != null) // with dateEnd = delete range
+                {
+                    for (int i = 0; i < holder.Values.Count; i++)
+                    {
+                        if (holder.Values[i].Date >= dateStart && holder.Values[i].Date <= dateEnd)
+                        {
+                            holder.Values.RemoveAt(i);
+                        }
+                    }
+                    return Ok();
+                }
+                else // only dateStart sended = exact dataTime to delete
+                {
+                    for (int i = 0; i < holder.Values.Count; i++)
+                    {
+                        if (holder.Values[i].Date == dateStart)
+                        {
+                            holder.Values.RemoveAt(i);
+                        }
+                    }
+                    return Ok();
+                }               
+            }
+            else // no data sended = error
+            {
+                return BadRequest();
+            }
         }
     }
 }
