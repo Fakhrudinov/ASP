@@ -80,7 +80,7 @@ namespace MetricsManager.Controllers
                 }
 
                 if (!founded)
-                    return NoContent();
+                    return BadRequest();
 
                 return Ok();
             }
