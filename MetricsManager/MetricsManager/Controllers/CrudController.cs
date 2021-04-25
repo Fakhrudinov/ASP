@@ -70,11 +70,12 @@ namespace MetricsManager.Controllers
             if (date != null && newValue != null)
             {
                 bool founded = false;
-                for (int i = 0; i < holder.Values.Count; i++)
+
+                foreach (DataAndTemp data in holder.Values)
                 {
-                    if (holder.Values[i].Date == date)
+                    if (data.Date == date)
                     {
-                        holder.Values[i].Temperature = (int)newValue;
+                        data.Temperature = (int)newValue;
                         founded = true;
                     }
                 }
