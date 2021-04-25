@@ -51,10 +51,10 @@ namespace MetricsManager.Controllers
                 dateStart = DateTime.MinValue;
             }
                 
-            var result = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
+            var results = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
 
-            if (result.Count<DataAndTemp>() > 0)
-                return Ok(result);
+            if (results.Count<DataAndTemp>() > 0)
+                return Ok(results);
             else
                 return NoContent();
 
@@ -110,36 +110,62 @@ namespace MetricsManager.Controllers
 
         [HttpDelete("delete")]
         public IActionResult Delete([FromQuery] DateTime? dateStart, [FromQuery] DateTime? dateEnd)
-        {            
-            if (dateStart != null)
+        {
+            if (dateEnd == null)
             {
-                if (dateEnd != null) // with dateEnd = delete range
+                dateEnd = DateTime.MaxValue;
+            }
+
+            if (dateStart == null)
+            {
+                dateStart = DateTime.MinValue;
+            }
+
+            bool founded = false;
+            // !!! backward direction only!
+            for (int i = holder.Values.Count - 1; i >= 0; i--)
+            {
+                if (holder.Values[i].Date >= dateStart && holder.Values[i].Date <= dateEnd)
                 {
-                    for (int i = 0; i < holder.Values.Count; i++)
-                    {
-                        if (holder.Values[i].Date >= dateStart && holder.Values[i].Date <= dateEnd)
-                        {
-                            holder.Values.RemoveAt(i);
-                        }
-                    }
-                    return Ok();
+                    holder.Values.RemoveAt(i);
+                    founded = true;
                 }
-                else // only dateStart sended = exact dataTime to delete
-                {
-                    for (int i = 0; i < holder.Values.Count; i++)
-                    {
-                        if (holder.Values[i].Date == dateStart)
-                        {
-                            holder.Values.RemoveAt(i);
-                        }
-                    }
-                    return Ok();
-                }               
             }
-            else // no data sended = error
-            {
+
+            if (!founded)
                 return BadRequest();
-            }
+
+            return Ok();
+
+            //if (dateStart != null)
+            //{
+            //    if (dateEnd != null) // with dateEnd = delete range
+            //    {
+            //        for (int i = 0; i < holder.Values.Count; i++)
+            //        {
+            //            if (holder.Values[i].Date >= dateStart && holder.Values[i].Date <= dateEnd)
+            //            {
+            //                holder.Values.RemoveAt(i);
+            //            }
+            //        }
+            //        return Ok();
+            //    }
+            //    else // only dateStart sended = exact dataTime to delete
+            //    {
+            //        for (int i = 0; i < holder.Values.Count; i++)
+            //        {
+            //            if (holder.Values[i].Date == dateStart)
+            //            {
+            //                holder.Values.RemoveAt(i);
+            //            }
+            //        }
+            //        return Ok();
+            //    }               
+            //}
+            //else // no data sended = error
+            //{
+            //    return BadRequest();
+            //}
         }
     }
 }
