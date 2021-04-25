@@ -41,27 +41,44 @@ namespace MetricsManager.Controllers
         [HttpGet("get")]
         public IActionResult Read([FromQuery] DateTime? dateStart, [FromQuery] DateTime? dateEnd)
         {
-            if (dateStart != null)
+            if (dateEnd == null)
             {
-                System.Collections.Generic.IEnumerable<DataAndTemp> result = null;
-                if (dateEnd != null) // with dateEnd = return range
-                {
-                    result = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
-                }
-                else // only dateStart sended = return exact value
-                {
-                    result = holder.Values.Where(x => x.Date == (DateTime)dateStart);
-                }
+                dateEnd = DateTime.MaxValue;
+            }
+                
+            if (dateStart == null)
+            {
+                dateStart = DateTime.MinValue;
+            }
+                
+            var result = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
 
-                if (result.Count<DataAndTemp>() > 0)
-                    return Ok(result);
-                else
-                    return NoContent();
-            }
-            else // no data sended = return all data
-            {
-                return Ok(holder.Values);
-            }
+            if (result.Count<DataAndTemp>() > 0)
+                return Ok(result);
+            else
+                return NoContent();
+
+            //if (dateStart != null)
+            //{
+            //    System.Collections.Generic.IEnumerable<DataAndTemp> result = null;
+            //    if (dateEnd != null) // with dateEnd = return range
+            //    {
+            //        result = holder.Values.Where(x => x.Date >= (DateTime)dateStart && x.Date <= (DateTime)dateEnd);
+            //    }
+            //    else // only dateStart sended = return exact value
+            //    {
+            //        result = holder.Values.Where(x => x.Date == (DateTime)dateStart);
+            //    }
+
+            //    if (result.Count<DataAndTemp>() > 0)
+            //        return Ok(result);
+            //    else
+            //        return NoContent();
+            //}
+            //else // no data sended = return all data
+            //{
+            //    return Ok(holder.Values);
+            //}
         }
 
         [HttpPut("update")]
